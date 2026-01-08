@@ -76,6 +76,7 @@ static const char * cstValidOptionNames[] = {
 	//c
 	"c:malloc",
 	"c:mmap",
+	"c:gpu-malloc",
 	
 	//output
 	"output:name",
@@ -153,6 +154,7 @@ Options::Options(void)
 	//c
 	this->cMalloc                 = true;
 	this->cMmap                   = true;
+	this->cGpuMalloc              = true;
 	//time
 	this->timeProfileEnabled      = true;
 	this->timeProfilePoints       = 512;
@@ -224,6 +226,7 @@ bool Options::operator==(const Options& value) const
 	//c
 	if (cMalloc != value.cMalloc) return false;
 	if (cMmap != value.cMmap) return false;
+	if (cGpuMalloc != value.cGpuMalloc) return false;
 	//time
 	if (this->timeProfileEnabled != value.timeProfileEnabled) return false;
 	if (this->timeProfilePoints != value.timeProfilePoints) return false;
@@ -367,6 +370,7 @@ void Options::loadFromIniDic ( dictionary* iniDic )
 	//c
 	this->cMalloc             = iniparser_getboolean(iniDic,"c:malloc", this->cMalloc);
 	this->cMmap               = iniparser_getboolean(iniDic,"c:mmap", this->cMmap);
+	this->cGpuMalloc          = iniparser_getboolean(iniDic,"c:gpu-malloc", this->cGpuMalloc);
 
 	//load values for stack profiling
 	this->stackResolve        = iniparser_getboolean(iniDic,"stack:resolve",this->stackResolve);
@@ -490,6 +494,7 @@ void convertToJson(htopml::JsonState & json,const Options & value)
 		json.openFieldStruct("c");
 			json.printField("malloc", value.cMalloc);
 			json.printField("mmap", value.cMmap);
+			json.printField("gpuMalloc", value.cGpuMalloc);
 		json.closeFieldStruct("c");
 		
 		json.openFieldStruct("output");
@@ -583,6 +588,7 @@ void Options::dumpConfig(const char* fname)
 	//c
 	IniParserHelper::setEntry(dic,"c:malloc",this->cMalloc);
 	IniParserHelper::setEntry(dic,"c:mmap",this->cMmap);
+	IniParserHelper::setEntry(dic,"c:gpu-malloc",this->cGpuMalloc);
 	
 	//output
 	IniParserHelper::setEntry(dic,"output:name",this->outputName.c_str());

@@ -97,6 +97,7 @@ struct Options
 	//c
 	bool cMalloc;
 	bool cMmap;
+	bool cGpuMalloc;
 	//vars for time profiging
 	bool timeProfileEnabled;
 	int timeProfilePoints;
