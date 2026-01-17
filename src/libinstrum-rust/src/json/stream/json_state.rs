@@ -1,27 +1,25 @@
 use std::io;
 use std::io::Write;
 
-/**
- * Define the current state for open/close checking.
- * @brief Enum to define the available json states.
-**/
+///
+/// Define the current state for open/close checking.
+/// @brief Enum to define the available json states.
+///
 #[derive(PartialEq, Clone, Copy)]
-enum JsonStateEnum
+pub enum JsonStateEnum
 {
-	/** Currently on the root element. **/
+	/// Currently on the root element.
 	Root = 1,
-	/** Currently inside structure, expect struct end or fields. **/
+	/// Currently inside structure, expect struct end or fields.
 	Struct = 2,
-	/** Currently inside array, expect array end or fields. **/
+	/// Currently inside array, expect array end or fields.
 	Array = 4,
-	/** Currently in state field, expect value, struct or array. **/
+	/// Currently in state field, expect value, struct or array.
 	Field = 8,
 }
 
-/**
- * Short structure to build the state stack inside JsonState.
- * @brief Structure to follow the json state.
-**/
+/// Short structure to build the state stack inside JsonState.
+/// @brief Structure to follow the json state.
 struct JsonStateStruct
 {
 	/** Current state **/
@@ -82,18 +80,14 @@ impl JsonState<'_> {
 		return state
 	}
 
-	/**
-	 * @return Return the current state for checking.
-	**/
+	/// @return Return the current state for checking.
 	pub fn get_state(&self) -> JsonStateEnum
 	{
 		return self.state_stack.last().unwrap().state;
 	}
 
-	/**
-	 * Push the new state into the stack.
-	 * @param state new state to init.
-	**/
+	/// Push the new state into the stack.
+	/// @param state new state to init.
 	fn push_state(&mut self, state: JsonStateEnum)
 	{
 		//create a new state
@@ -106,38 +100,31 @@ impl JsonState<'_> {
 		self.state_stack.push(tmp)
 	}
 
-	/**
-	 * Check if a first element was provided in case of arrays or structure.
-	 * Usefull to know if we need to add separators or not.
-	**/
+	/// Check if a first element was provided in case of arrays or structure.
+	/// Usefull to know if we need to add separators or not.
 	fn first_is_done(& mut self)
 	{
 		self.state_stack.last_mut().unwrap().is_first = false;
 	}
 
-	/**
-	 * Check if a first element was provided in case of arrays or structure.
-	 * Usefull to know if we need to add separators or not.
-	**/
+	/// Check if a first element was provided in case of arrays or structure.
+	/// Usefull to know if we need to add separators or not.
 	fn is_first(&self) -> bool
 	{
 		return self.state_stack.last().unwrap().is_first;
 	}
 
-	/**
-	 * Pop the current state from the stack.
-	 * @param state State to remove (only for checking).
-	**/
+	/// Pop the current state from the stack.
+	/// @param state State to remove (only for checking).
 	fn pop_state(& mut self, state: JsonStateEnum)
 	{
 		assert!(self.state_stack.last().unwrap().state == state);
 		self.state_stack.pop();
 	}
 
-	/**
-	 * Internal function to close the current field.
-	 * @param name Name of the field to close (for checking).
-	**/
+	
+	/// Internal function to close the current field.
+	/// @param name Name of the field to close (for checking).
 	fn close_field(& mut self, _name: String)
 	{
 		//check where we are
@@ -150,10 +137,8 @@ impl JsonState<'_> {
 		self.first_is_done();
 	}
 
-	/**
-	 * Internal function to start a new field.
-	 * @param name Name of the field to declare.
-	**/
+	/// Internal function to start a new field.
+	/// @param name Name of the field to declare.
 	fn open_field(& mut self, name: String)
 	{
 		//check where we are
@@ -183,10 +168,8 @@ impl JsonState<'_> {
 		}
 	}
 
-	/**
-	 * Write padding characters into output stream. It will use the local indent
-	 * parameter and use tabulations.
-	**/
+	/// Write padding characters into output stream. It will use the local indent
+	/// parameter and use tabulations.
 	fn put_padding(& mut self)
 	{
 		if self.use_indent
@@ -198,17 +181,13 @@ impl JsonState<'_> {
 		}
 	}
 
-	/**
-	 * Tells if we generate a LUA output instead of JSON.
-	 */
+	/// Tells if we generate a LUA output instead of JSON.
 	pub fn is_lua(&self) -> bool
 	{
 		return self.lua;
 	}
 
-	/**
-	 * Display a list separator.
-	 */
+	/// Display a list separator.
 	pub fn print_list_separator(& mut self)
 	{
 		//check where we are
