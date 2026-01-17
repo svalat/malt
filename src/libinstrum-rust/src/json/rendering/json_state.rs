@@ -1,6 +1,8 @@
 use std::fmt::Display;
 use std::io;
 use std::io::Write;
+use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 ///
 /// Define the current state for open/close checking.
@@ -401,7 +403,9 @@ impl JsonState<'_> {
 	 * @param value Base address of the values array to print.
 	 * @param size Number of values into array.
 	**/
-	pub fn print_field_array(&mut self, name: &str, value: &mut dyn Iterator<Item = &dyn JsonFieldValue>)
+	pub fn print_field_array<T>(&mut self, name: &str, value: &mut dyn Iterator<Item = &T>)
+	where
+		T: JsonFieldValue
 	{
 		//check where we are
 		assert!(self.get_state() as i8 & (JsonStateEnum::Struct as i8 | JsonStateEnum::Root as i8) != 0);
@@ -566,6 +570,90 @@ impl JsonFieldValue for i128
 	}
 }
 
+impl JsonFieldValue for u8
+{
+	fn convert_to_json(&self, state: &mut JsonState)
+	{
+		state.push_raw_string(self);
+	}
+}
+
+impl JsonFieldValue for u16
+{
+	fn convert_to_json(&self, state: &mut JsonState)
+	{
+		state.push_raw_string(self);
+	}
+}
+
+impl JsonFieldValue for u32
+{
+	fn convert_to_json(&self, state: &mut JsonState)
+	{
+		state.push_raw_string(self);
+	}
+}
+
+impl JsonFieldValue for u64
+{
+	fn convert_to_json(&self, state: &mut JsonState)
+	{
+		state.push_raw_string(self);
+	}
+}
+
+impl JsonFieldValue for u128
+{
+	fn convert_to_json(&self, state: &mut JsonState)
+	{
+		state.push_raw_string(self);
+	}
+}
+
+impl<K,V> JsonFieldValue for HashMap<K, V>
+where
+	K: Display,
+	V: JsonFieldValue
+{
+	fn convert_to_json(&self, state: &mut JsonState)
+	{
+		state.open_struct();
+		for (key, val) in self.iter() {
+			let key_str = format!("{}", key);
+			state.print_field(&key_str, val);
+		}
+		state.close_struct();
+	}
+}
+
+impl<K,V> JsonFieldValue for BTreeMap<K, V>
+where
+	K: Display,
+	V: JsonFieldValue
+{
+	fn convert_to_json(&self, state: &mut JsonState)
+	{
+		state.open_struct();
+		for (key, val) in self.iter() {
+			let key_str = format!("{}", key);
+			state.print_field(&key_str, val);
+		}
+		state.close_struct();
+	}
+}
+
+impl<V> JsonFieldValue for Vec<V>
+where
+	V: JsonFieldValue
+{
+	fn convert_to_json(&self, state: &mut JsonState)
+	{
+		state.open_array();
+		self.iter().for_each(|x| state.print_value(x));
+		state.close_array();
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -612,38 +700,120 @@ mod tests {
 	#[test]
 	fn basic_print_field_numbers() {
 		let mut stream = io::BufWriter::new(Vec::<u8>::new());
-		let mut state = JsonState::new(&mut stream, true, false);
+		let mut state = JsonState::new(&mut stream, false, false);
 		state.open_struct();
 		state.print_field("i8", &(8 as i8));
 		state.print_field("i16", &(16 as i16));
 		state.print_field("i32", &(32 as i32));
 		state.print_field("i64", &(64 as i64));
+		state.print_field("i128", &(64 as i128));
+		state.print_field("u8", &(8 as u8));
+		state.print_field("u16", &(16 as u16));
+		state.print_field("u32", &(32 as u32));
+		state.print_field("u64", &(64 as u64));
+		state.print_field("u128", &(64 as u128));
 		state.print_field("f32", &(32.1 as f32));
 		state.print_field("f64", &(64.1 as f64));
 		state.close_struct();
 		let as_str = str::from_utf8(stream.buffer()).unwrap();
-		assert_eq!(as_str, "{\n\t\"i8\":\"8\",\n\t\"i16\":\"16\",\n\t\"i32\":\"32\",\n\t\"i64\":\"64\",\n\t\"f32\":\"32.1\",\n\t\"f64\":\"64.1\"\n}\n");
+		assert_eq!(as_str, "{\"i8\":\"8\",\"i16\":\"16\",\"i32\":\"32\",\"i64\":\"64\",\"i128\":\"64\",\"u8\":\"8\",\"u16\":\"16\",\"u32\":\"32\",\"u64\":\"64\",\"u128\":\"64\",\"f32\":\"32.1\",\"f64\":\"64.1\"}");
+	}
+
+	#[test]
+	fn print_vec() {
+		let mut stream = io::BufWriter::new(Vec::<u8>::new());
+		let mut state = JsonState::new(&mut stream, true, false);
+		state.open_struct();
+		let v: Vec<i16> = vec![10, 16, 32, 64];
+		state.print_field_array("vec", &mut v.iter());
+		state.close_struct();
+		let as_str = str::from_utf8(stream.buffer()).unwrap();
+		assert_eq!(as_str, "{\n\t\"vec\":[\"10\", \"16\", \"32\", \"64\"]\n}\n");
+	}
+
+	#[test]
+	fn print_hash_map() {
+		let mut stream = io::BufWriter::new(Vec::<u8>::new());
+		let mut state = JsonState::new(&mut stream, true, false);
+		state.open_struct();
+		let map = HashMap::from([
+			("a", 1),
+		]);
+		state.print_field("map", &map);
+		state.close_struct();
+		let as_str = str::from_utf8(stream.buffer()).unwrap();
+		assert_eq!(as_str, "{\n\t\"map\":{\n\t\t\"a\":\"1\"\n\t}\n\t\n}\n");
+	}
+
+	#[test]
+	fn print_btree_map() {
+		let mut stream = io::BufWriter::new(Vec::<u8>::new());
+		let mut state = JsonState::new(&mut stream, true, false);
+		state.open_struct();
+		let map = BTreeMap::from([
+			("a", 1),
+			("b", 2),
+			("c", 3),
+		]);
+		state.print_field("map", &map);
+		state.close_struct();
+		let as_str = str::from_utf8(stream.buffer()).unwrap();
+		assert_eq!(as_str, "{\n\t\"map\":{\n\t\t\"a\":\"1\",\n\t\t\"b\":\"2\",\n\t\t\"c\":\"3\"\n\t}\n\t\n}\n");
+	}
+
+	#[test]
+	fn print_not_indented() {
+		let mut stream = io::BufWriter::new(Vec::<u8>::new());
+		let mut state = JsonState::new(&mut stream, false, false);
+		state.open_struct();
+		let map = BTreeMap::from([
+			("a", 1),
+			("b", 2),
+			("c", 3),
+		]);
+		state.print_field("map", &map);
+		let v: Vec<i16> = vec![10, 16, 32, 64];
+		state.print_field_array("vec", &mut v.iter());
+		state.close_struct();
+		let as_str = str::from_utf8(stream.buffer()).unwrap();
+		assert_eq!(as_str, "{\"map\":{\"a\":\"1\",\"b\":\"2\",\"c\":\"3\"},\"vec\":[\"10\", \"16\", \"32\", \"64\"]}");
+	}
+
+	#[test]
+	fn print_field_struct() {
+		let mut stream = io::BufWriter::new(Vec::<u8>::new());
+		let mut state = JsonState::new(&mut stream, false, false);
+		state.open_struct();
+		state.open_field_struct("test");
+		state.print_field("test2", &"toto".to_string());
+		state.close_field_struct("test");
+		state.close_struct();
+		let as_str = str::from_utf8(stream.buffer()).unwrap();
+		assert_eq!(as_str, "{\"test\":{\"test2\":\"toto\"}}");
+	}
+
+	#[test]
+	fn print_field_array() {
+		let mut stream = io::BufWriter::new(Vec::<u8>::new());
+		let mut state = JsonState::new(&mut stream, false, false);
+		state.open_struct();
+		state.open_field_array("test");
+		state.print_value(&"toto".to_string());
+		state.close_field_array("test");
+		state.close_struct();
+		let as_str = str::from_utf8(stream.buffer()).unwrap();
+		assert_eq!(as_str, "{\"test\":[\"toto\"]}");
+	}
+
+	#[test]
+	fn print_bool() {
+		let mut stream = io::BufWriter::new(Vec::<u8>::new());
+		let mut state = JsonState::new(&mut stream, false, false);
+		state.open_struct();
+		state.print_field("test1", &true);
+		state.print_field("test2", &false);
+		state.close_struct();
+		let as_str = str::from_utf8(stream.buffer()).unwrap();
+		assert_eq!(as_str, "{\"test1\":\"true\",\"test2\":\"false\"}");
 	}
 }
-
-/*******************  FUNCTION  *********************/
-//specific implementations for some known types
-/*
-void convertToJson(JsonState & json, bool value);
-void convertToJson(JsonState & json, void * ptr);
-void convertToJson(JsonState & json, const htopml::IJsonConvertible & object);
-void convertToJson(JsonState & json, htopml::IJsonConvertible & object);
-*/
-
-/*******************  FUNCTION  *********************/
-//generic version
-//template <class T> void convertToJson(JsonState & json, const T & iterable);
-
-/*******************  FUNCTION  *********************/
-//specific implementation for some STL containers
-/*
-template <class T> void convertToJson(JsonState & json, const std::vector<T> & iterable);
-template <class T> void convertToJson(JsonState & json, const std::list<T> & iterable);
-template <class T,class U> void convertToJson(JsonState & json, const std::map<T,U> & iterable);
-template <class U> void convertToJson(JsonState & json, const std::map<std::string,U> & iterable);
-*/
