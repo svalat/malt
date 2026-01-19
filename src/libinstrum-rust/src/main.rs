@@ -8,6 +8,8 @@ use crate::json::rendering::json_state::JsonState;
 
 /// Home made JSON handling implementation to keep low memory.
 pub mod json;
+/// Implement some cache structures to improve speed.
+pub mod caches;
 
 /// Main entry point
 fn main() {
