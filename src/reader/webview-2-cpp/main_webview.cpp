@@ -356,6 +356,7 @@ int main(int argc, char ** argv)
 		noAuthFiles.insert("/assets/index.js");
 		noAuthFiles.insert("/assets/style.css");
 		noAuthFiles.insert("/assets/MavenPro-VariableFont_wght.ttf");
+		noAuthFiles.insert("/data/static-profile.js");
 
 		//if auth is enabled
 		if (options.auth) {
