@@ -7,3 +7,4 @@
 *    AUTHOR   : Sébastien Valat - 2026
 ***********************************************************/
 const MALT_DATA={};
+const MALT_PROFILE_PATH="";
