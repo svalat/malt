@@ -107,6 +107,7 @@ class UpdateVersion:
         self.patch_specific_file("src/doc/developer/file-format.md", [], self.old_short_version, target_version)
         self.patch_specific_file("doc/source/conf.py", [], self.old_version, target_version + extra)
         self.patch_specific_file("doc/source/advanced/packaging.rst", [], self.old_short_version, target_version)
+        self.patch_specific_file("src/webview/client-files/package.json", [], self.old_short_version, target_version)
         print("[patch] Patch specific files done")
 
     def rename_some_files_with_version(self, target_version, extra):

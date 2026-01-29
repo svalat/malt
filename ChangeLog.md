@@ -1,8 +1,8 @@
 Change log
 ==========
 
-next - XX/XX/2026
------------------
+1.6.0 - 29/01/2026
+------------------
 
  - Do not tread in parallel the huge ELF files with addr2line (-o addr2line:huge=50M).
  - With addr2line tread in a single shot the huge ELF files.
