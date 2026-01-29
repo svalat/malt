@@ -15,6 +15,7 @@ import { resolve } from 'node:path'
 import svgLoader from 'vite-svg-loader'
 import path from "path";
 import { viteSingleFile } from "vite-plugin-singlefile"
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 import { env } from 'node:process';
 
 function gen_build_path() : string
@@ -66,6 +67,14 @@ function gen_plugins() : Array<any> {
   if (process.env.VITE_APP === 'static' || process.env.VITE_APP === 'summary') {
     plugins.push(viteSingleFile());
   }
+  plugins.push(viteStaticCopy({
+    targets: [
+      {
+        src: path.resolve(__dirname, './data') + '/[!.]*', // 1️⃣
+        dest: './data/', // 2️⃣
+      },
+    ],
+  }));
   return plugins;
 }
 

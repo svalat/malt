@@ -46,6 +46,3 @@ fi
 npm run build
 VITE_APP=static npm run build
 VITE_APP=summary npm run build
-cp -r data dist/static
-cp -r data dist/dynamic
-cp -r data dist/summary
