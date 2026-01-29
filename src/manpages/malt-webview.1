@@ -15,7 +15,16 @@ Disable usage of HTTP authentification to secure the pages of the GUI\. Caution,
 \fB\-o\fR, \fB\-\-override\fR
 If you copy a profile file from a remote machine to your local one, your code might be stored into another place (not same user, not same path)\. Thanks to override options you can alias some paths to make it transparent to the GUI and be able to find your source code\. The format is \fIsrc_path1:dest_path1,src_path2,dest_path2\fR\. The easiest use is to override the root directory of your project\.
 .TP
-\fBp\fR, \fB\-\-port\fR
+\fB\-s\fR, \fB\-\-static\fR
+Dump the webview in static mode, with only the pages supported by this static mode\. It will also copy the profile inside the given directory, see \fB\-\-embed\-profile\fR to contrôle this last behavior\.
+.TP
+\fB\-S\fR, \fB\-\-static\-summary\fR
+Dump the webview in static mode, with only the summary page in this case\. It will also copy the profile inside the given directory, see \fB\-\-embed\-profile\fR to contrôle this last behavior\.
+.TP
+\fB\-e\fR, \fB\-\-embed\-profile\fR
+Define the mode to apply to copy the profile in the static rendering of the webview\. The argument can be either : \fBxz\fR, \fBjson\fR or \fBnone\fR\.
+.TP
+\fB\-p\fR, \fB\-\-port\fR
 Force to use another port than default 8080\.
 .TP
 \fBversion\fR
@@ -41,6 +50,6 @@ When working remotly you can avoid exposin the malt webview port publicly to oth
 .P
 # remote malt\-webview \-p /home/myuser/malt\.sock malt\-PROFILE\.json # on your workstation ssh \-L 8080:/home/myuser/malt\.sock user@ssh\-server
 .SH "VERSION"
-This is the manpage of MALT version 1\.5\.0\.
+This is the manpage of MALT version 1\.6\.0\.
 .SH "SEE ALSO"
 malt\-python(1), malt\-webview(1)

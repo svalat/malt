@@ -22,7 +22,18 @@ http://localhost:8080.
    you can alias some paths to make it transparent to the GUI and be able to find your
    source code. The format is *src_path1:dest_path1,src_path2,dest_path2*. The easiest use
    is to override the root directory of your project.
- * `p`, `--port`:
+ * `-s`, `--static`:
+   Dump the webview in static mode, with only the pages supported by this static mode.
+   It will also copy the profile inside the given directory, see `--embed-profile` to
+   contrôle this last behavior.
+ * `-S`, `--static-summary`:
+   Dump the webview in static mode, with only the summary page in this case.
+   It will also copy the profile inside the given directory, see `--embed-profile` to
+   contrôle this last behavior.
+ * `-e`, `--embed-profile`:
+   Define the mode to apply to copy the profile in the static rendering of the webview.
+   The argument can be either : `xz`, `json` or `none`.
+ * `-p`, `--port`:
    Force to use another port than default 8080.
  * `version`:
    Display the current version of MALT you are using.
@@ -58,7 +69,7 @@ to other users of the cluster by using a unix socket file in place of the port.
 
 ## VERSION
 
-   This is the manpage of MALT version 1.5.0.
+   This is the manpage of MALT version 1.6.0.
 
 ## SEE ALSO
 

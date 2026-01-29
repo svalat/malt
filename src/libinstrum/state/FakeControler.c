@@ -1,10 +1,10 @@
 /***********************************************************
 *    PROJECT  : MALT (MALoc Tracker)
-*    DATE     : 10/2025
+*    DATE     : 01/2026
 *    LICENSE  : CeCILL-C
 *    FILE     : src/libinstrum/state/FakeControler.c
 *-----------------------------------------------------------
-*    AUTHOR   : Sébastien Valat - 2016
+*    AUTHOR   : Sébastien Valat - 2016 - 2026
 *    AUTHOR   : Sébastien Valat (INRIA) - 2025
 ***********************************************************/
 

@@ -1,12 +1,12 @@
 #!/bin/bash
 ############################################################
 #    PROJECT  : MALT (MALoc Tracker)
-#    DATE     : 12/2025
+#    DATE     : 01/2026
 #    LICENSE  : CeCILL-C
 #    FILE     : src/webview/client-files/prepare.sh
 #-----------------------------------------------------------
 #    AUTHOR   : Sébastien Valat (INRIA) - 2025
-#    AUTHOR   : Sébastien Valat - 2025
+#    AUTHOR   : Sébastien Valat - 2025 - 2026
 ############################################################
 
 ############################################################
