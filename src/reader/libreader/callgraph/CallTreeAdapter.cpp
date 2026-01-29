@@ -327,14 +327,20 @@ std::string D3ScaleLinearColorRange::getColor(double value) const
 	double delta = this->rangeMax - this->rangeMin; 
 	double ratio = (value - rangeMin) / delta;
 
+	//corner case
+	if (delta == 0)
+		ratio = 1;
+
 	//calc colors
-	int r = this->colorMin_r + (double)(this->colorMax_r - this->colorMin_r) * ratio;
-	int g = this->colorMin_g + (double)(this->colorMax_g - this->colorMin_g) * ratio;
-	int b = this->colorMin_b + (double)(this->colorMax_b - this->colorMin_b) * ratio;
+	unsigned int r = this->colorMin_r + (int)(((double)this->colorMax_r - (double)this->colorMin_r) * ratio);
+	unsigned int g = this->colorMin_g + (int)(((double)this->colorMax_g - (double)this->colorMin_g) * ratio);
+	unsigned int b = this->colorMin_b + (int)(((double)this->colorMax_b - (double)this->colorMin_b) * ratio);
 
 	//make web color
 	char buffer[256];
-	snprintf(buffer, sizeof(buffer), "#%02x%02x%02x", r, g, b);
+	const int status = snprintf(buffer, sizeof(buffer), "#%02x%02x%02x", r, g, b);
+	if (status != 7)
+		assert(false);
 
 	//ok
 	return buffer;
