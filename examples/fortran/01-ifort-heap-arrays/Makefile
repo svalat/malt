@@ -21,3 +21,6 @@ test:
 clean:
 	rm -f reproducer_heap reproducer_stack
 	rm -f malt-*
+
+############################################################
+.PHONY: all test clean
