@@ -926,6 +926,7 @@ void AllocStackProfiler::onExit(void )
 		memoryTimeline.flush();
 		systemTimeline.flush();
 		memoryBandwidth.flush();
+		memoryGpuBandwidth.flush();
 		
 		//sumpress
 		if (gblOptions->python.hideImports) {
