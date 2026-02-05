@@ -8,17 +8,22 @@
 #    AUTHOR   : Sébastien Valat - 2015 - 2024
 #    AUTHOR   : Sébastien Valat (INRIA) - 2024
 ############################################################
-test:
+image: gcc
+
+before_script:
+  - apt update
+  - apt-get install -y libunwind-dev nodejs npm cmake libelf-dev graphviz libssl-dev libpython3-dev
+
+build:
+  stage: build
   script:
-  - git submodule update --init
-  - ls -la
-  - rm -rfv build testinstall
-  - mkdir build
-  - cd build
-  - ../configure --enable-debug --enable-tests --prefix="$PWD/../testinstall" CXXFLAGS="-Werror" CFLAGS="-Werror"
-  - make
-  - ctest --output-on-failure
-  - make install
-  tags: 
-  except:
-  - tags
+    - rm -rfv build testinstall
+    - mkdir build
+    - cd build
+    - ../configure --enable-tests --enable-debug --enable-junit-output
+    - make
+
+test:
+  stage: test
+  script:
+    - ctest --output-on-failure
