@@ -94,6 +94,7 @@ bool Addr2Line::run(void)
 		snprintf(path, 4096, "/proc/self/fd/%d", fd);
 		ssize_t status = readlink(path, buffer, sizeof(buffer));
 		assumeArg(status > 0, "Fail to get symlink translation : %1").arg(path).end();
+		buffer[status] = '\0';
 		fileBuffer = buffer;
 		MALT_FREE(path);
 		MALT_FREE(buffer);
