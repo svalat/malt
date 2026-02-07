@@ -296,29 +296,6 @@ void AllocStackProfiler::onAllocEvent(void* ptr, size_t size,Stack* userStack,MM
 		if (peakTracking(size))
 			this->domains.updatePeak(domain);
 	
-		//update mem usage
-		if (options.time.enabled)
-		{
-			CODE_TIMING("timeProfileAllocStart",
-				curMemoryTimeline.segments++;
-				curMemoryTimeline.requestedMem+=size;
-				doDump |= trigger.onRequestUpdate(curMemoryTimeline.requestedMem);
-				if (memoryTimeline.isNewPoint(t) || size > 1024*1024)
-				{
-					OSProcMemUsage mem = OS::getProcMemoryUsage();
-					curMemoryTimeline.virtualMem = mem.virtualMemory - gblInternaAlloc->getTotalMemory() - maltJeMallocMem;
-					size_t allocMem = gblInternaAlloc->getTotalMemory() + maltJeMallocMem;
-					if (mem.physicalMemory < allocMem) {
-						curMemoryTimeline.physicalMem = 0;
-					} else {
-						curMemoryTimeline.physicalMem = mem.physicalMemory - allocMem;
-					}
-					doDump |= trigger.onProcMemUpdate(mem);
-				}
-				sizeOverTime.push(t-trefTicks,size);
-			);
-		}
-	
 		if (options.stack.enabled)
 		{
 			//search if not provided
@@ -352,12 +329,23 @@ void AllocStackProfiler::onAllocEvent(void* ptr, size_t size,Stack* userStack,MM
 					it->second++;
 			);
 		}
-	
-		//update intern mem usage
+
+		//update mem usage
 		if (options.time.enabled)
 		{
-			curMemoryTimeline.internalMem = gblInternaAlloc->getInuseMemory() + this->maltJeMallocMem;
-			memoryTimeline.push(t,curMemoryTimeline,(void*)callStackNode->stack);
+			CODE_TIMING("timeProfileAllocStart",
+				//handle requested mem
+				curMemoryTimeline.segments++;
+				curMemoryTimeline.requestedMem+=size;
+				doDump |= trigger.onRequestUpdate(curMemoryTimeline.requestedMem);
+
+				//handle system & proc memory
+				if (memoryTimeline.isNewPoint(t) || systemTimeline.isNewPoint(t) || size > 1024*1024)
+					doDump |= this->onUpdateMem(t, callStackNode->stack, false);
+
+				//handle sizeOverTime
+				sizeOverTime.push(t-trefTicks,size);
+			);
 		}
 		
 		//track alloc bandwidth
@@ -373,35 +361,54 @@ void AllocStackProfiler::onAllocEvent(void* ptr, size_t size,Stack* userStack,MM
 }
 
 /**********************************************************/
-void AllocStackProfiler::onUpdateMem(const OSProcMemUsage & procMem, const OSMemUsage & sysMem)
+bool AllocStackProfiler::onUpdateMem(ticks t, const Stack * stack, bool takeLock)
 {
-	MALT_OPTIONAL_CRITICAL(lock,threadSafe)
+	//get sys mem
+	OSMemUsage sysMem = OS::getMemoryUsage();
+	OSProcMemUsage procMem = OS::getProcMemoryUsage();
+
+	//if has 0, we got an error ignore the update
+	if (procMem.virtualMemory == 0 && procMem.physicalMemory == 0)
+		return false;
+
+	MALT_OPTIONAL_CRITICAL(lock,threadSafe && takeLock)
+		//vars
 		ticks t = Clock::getticks();
-		if (systemTimeline.isNewPoint(t))
-		{
-			curSystemTimeline.cachedMemory = sysMem.cached;
-			curSystemTimeline.freeMemory = sysMem.freeMemory;
-			curSystemTimeline.swapMemory = sysMem.swap;
+
+		//update system metrics
+		curSystemTimeline.cachedMemory = sysMem.cached;
+		curSystemTimeline.freeMemory = sysMem.freeMemory;
+		curSystemTimeline.swapMemory = sysMem.swap;
+
+		//update memory timelines
+		const size_t maltMem = gblInternaAlloc->getTotalMemory() + maltJeMallocMem.load();
+		assert(maltMem <= curMemoryTimeline.virtualMem);
+		curMemoryTimeline.virtualMem = procMem.virtualMemory - maltMem;
+		if (procMem.physicalMemory < maltMem) {
+			curMemoryTimeline.physicalMem = 0;
+		} else {
+			curMemoryTimeline.physicalMem = procMem.physicalMemory - maltMem;
 		}
-		if (memoryTimeline.isNewPoint(t))
-		{
-			curMemoryTimeline.virtualMem = procMem.virtualMemory - gblInternaAlloc->getTotalMemory() - maltJeMallocMem;
-			curMemoryTimeline.physicalMem = procMem.physicalMemory - gblInternaAlloc->getTotalMemory() - maltJeMallocMem;
-			size_t allocMem = gblInternaAlloc->getTotalMemory() + maltJeMallocMem;
-			if (procMem.physicalMemory < allocMem) {
-				curMemoryTimeline.physicalMem = 0;
-			} else {
-				curMemoryTimeline.physicalMem = procMem.physicalMemory - allocMem;
-			}
-		}
+
 		//update intern mem usage
 		if (options.time.enabled)
 		{
-			curMemoryTimeline.internalMem = gblInternaAlloc->getInuseMemory() + this->maltJeMallocMem;
-			memoryTimeline.push(t,curMemoryTimeline,nullptr);
-			systemTimeline.push(t,curSystemTimeline,nullptr);
+			assert(curMemoryTimeline.physicalMem < 1024UL*1024UL*1024UL*1024UL);
+			const size_t maltMem = gblInternaAlloc->getTotalMemory() + maltJeMallocMem;
+			curMemoryTimeline.internalMem = maltMem;
+			memoryTimeline.push(t,curMemoryTimeline,(void*)stack);
+			systemTimeline.push(t,curSystemTimeline,(void*)stack);
 		}
 	MALT_END_CRITICAL
+
+	//check if trigget dump
+	if (this->trigger.onSysUpdate(sysMem))
+		return true;
+	if (this->trigger.onProcMemUpdate(procMem))
+		return true;
+
+	//commonly don't trigger dump
+	return false;
 }
 
 /**********************************************************/
@@ -485,36 +492,14 @@ FreeFinalInfos AllocStackProfiler::onFreeEvent(void* ptr, MALT::Stack* userStack
 		//update timeline
 		if (options.time.enabled)
 		{
-			//progr internal memory
-			if (memoryTimeline.isNewPoint(t) || size > 1024UL*1024UL)
-			{
-				OSProcMemUsage mem = OS::getProcMemoryUsage();
-				curMemoryTimeline.virtualMem = mem.virtualMemory - gblInternaAlloc->getTotalMemory() - maltJeMallocMem;
-				size_t allocMem = gblInternaAlloc->getTotalMemory() + maltJeMallocMem;
-				if (mem.physicalMemory < allocMem) {
-					curMemoryTimeline.physicalMem = 0;
-				} else {
-					curMemoryTimeline.physicalMem = mem.physicalMemory - allocMem;
-				}
-			}
+			//handle requested mem
 			curMemoryTimeline.segments--;
-			curMemoryTimeline.internalMem = gblInternaAlloc->getInuseMemory();
 			curMemoryTimeline.requestedMem -= size;
-			memoryTimeline.push(t,curMemoryTimeline,(void*)callStackNode->stack);
+			doDump |= trigger.onRequestUpdate(curMemoryTimeline.requestedMem);
 
-			//system memory
-			if (systemTimeline.isNewPoint(t))
-			{
-				OSMemUsage sysMem = OS::getMemoryUsage();
-				curSystemTimeline.cachedMemory = sysMem.cached;
-				curSystemTimeline.freeMemory = sysMem.freeMemory;
-				curSystemTimeline.swapMemory = sysMem.swap;
-				systemTimeline.push(t,curSystemTimeline,(void*)callStackNode->stack);
-
-				//trigger dump
-				if (this->trigger.onSysUpdate(sysMem))
-					doDump = true;
-			}
+			//handle system & proc memory
+			if (memoryTimeline.isNewPoint(t) || systemTimeline.isNewPoint(t) || size > 1024*1024)
+				doDump |= this->onUpdateMem(t, callStackNode->stack, false);
 		}
 		
 		//free badnwidth

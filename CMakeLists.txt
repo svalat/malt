@@ -216,6 +216,7 @@ endif()
 
 ############################################################
 #build subdirs
+add_subdirectory(examples)
 add_subdirectory(src)
 if (ENABLE_PROFILER)
 	add_subdirectory(extern-deps)

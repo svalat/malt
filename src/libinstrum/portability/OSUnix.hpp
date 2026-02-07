@@ -26,33 +26,33 @@ namespace MALT
 /**********************************************************/
 struct LinuxInternalStatm
 {
-	size_t size;
-	size_t resident;
-	size_t share;
-	size_t text;
-	size_t lib;
-	size_t data;
-	size_t dirty;
+	size_t size{0};
+	size_t resident{0};
+	size_t share{0};
+	size_t text{0};
+	size_t lib{0};
+	size_t data{0};
+	size_t dirty{0};
 };
 
 /**********************************************************/
 struct OSProcMemUsage
 {
-	size_t virtualMemory;
-	size_t physicalMemory;
+	size_t virtualMemory{0};
+	size_t physicalMemory{0};
 };
 
 /**********************************************************/
 struct OSMemUsage
 {
-	size_t totalMemory;
-	size_t freeMemory;
-	size_t buffers;
-	size_t cached;
-	size_t swap;
-	size_t totalSwap;
-	size_t directMap4K;
-	size_t directMap2M;
+	size_t totalMemory{0};
+	size_t freeMemory{0};
+	size_t buffers{0};
+	size_t cached{0};
+	size_t swap{0};
+	size_t totalSwap{0};
+	size_t directMap4K{0};
+	size_t directMap2M{0};
 };
 
 /**********************************************************/

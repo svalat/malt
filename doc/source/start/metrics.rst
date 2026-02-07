@@ -304,9 +304,16 @@ in account all the memory allocation done on this particular location.
     }
 
     int main() {
-        void * buffer = malloc(256);
-        func();                         // local peak = 48 + 4096
+        void * buffer = malloc(256);    // local peak = 256
+        func();                         // local peak = 256 + 32 + 4096
     }
+
+Note that the local peak is measured without keeping the log of all the allocs,
+it means that we cannot really compute the **inclusive** version of a parent function,
+because the peaks of the sub-childs might not rise at the same time. It means they
+cannot be summed easily.
+
+**Limitation**: MALT currently apply this sum, but it is a sur-estimation of the real value.
 
 Global peak
 ^^^^^^^^^^^

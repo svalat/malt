@@ -272,7 +272,6 @@ void * MALT::malt_wrap_mmap(void *start,size_t length,int prot,int flags,int fd,
 
 	//if in internal je malloc
 	if (env.isInInternalJeMalloc()) {
-		env.getGlobalProfiler().registerMaltJeMallocMem(length);
 		flags += MAP_POPULATE;
 	}
 
@@ -283,6 +282,13 @@ void * MALT::malt_wrap_mmap(void *start,size_t length,int prot,int flags,int fd,
 	ticks t = Clock::getticks();
 	void * res = real_mmap(start,length,prot,flags,fd,offset);
 	t = Clock::getticks() - t;
+
+	//if in internal je malloc
+	//Take care to make this part of the counting after the mmap op
+	//otherwise it create glitch with the watch-dog which can get
+	//maltMem > virtualMem
+	if (env.isInInternalJeMalloc())
+		env.getGlobalProfiler().registerMaltJeMallocMem(length);
 
 	//profile
 	if (guard.needInstrument() && res != MAP_FAILED && gblOptions->c.mmap) {
@@ -302,7 +308,7 @@ int MALT::malt_wrap_munmap(void * start, size_t length, const MunmapFuncPtr & re
 
 	//if in internal je malloc
 	if (env.isInInternalJeMalloc()) {
-		env.getGlobalProfiler().registerMaltJeMallocMem(-length);
+		env.getGlobalProfiler().registerMaltJeMallocMem(-(ssize_t)length);
 	}
 
 	//run the default function
@@ -331,9 +337,32 @@ void * MALT::malt_wrap_mremap(void *old_address, size_t old_size , void * new_ad
 	//run the default function
 	assert(gblState.status > ALLOC_WRAP_INIT_SYM);
 
+	//calc delta
+	const ssize_t delta = (ssize_t)new_size - (ssize_t)old_size;
+
+	//if in internal je malloc
+	//Take care to make this part of the counting before the mmap op
+	//otherwise it create glitch with the watch-dog which can get
+	//maltMem > virtualMem
+	if (delta < 0 && env.isInInternalJeMalloc())
+		env.getGlobalProfiler().registerMaltJeMallocMem(delta);
+
 	ticks t = Clock::getticks();
 	void * res = real_mremap(old_address,old_size,new_size,flags,new_address);
 	t = Clock::getticks() - t;
+
+	//touch the memory so it is physically mapped
+	if (delta > 0) {
+		assert(old_size + delta == new_size);
+		memset((char*)res + old_size, 0, delta);
+	}
+
+	//if in internal je malloc
+	//Take care to make this part of the counting after the mmap op
+	//otherwise it create glitch with the watch-dog which can get
+	//maltMem > virtualMem
+	if (delta >= 0 && env.isInInternalJeMalloc())
+		env.getGlobalProfiler().registerMaltJeMallocMem(delta);
 
 	//profile
 	if (guard.needInstrument() && res != MAP_FAILED && gblOptions->c.mmap) {
