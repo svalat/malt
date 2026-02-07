@@ -1,6 +1,6 @@
 /***********************************************************
 *    PROJECT  : MALT (MALoc Tracker)
-*    DATE     : 01/2026
+*    DATE     : 02/2026
 *    LICENSE  : CeCILL-C
 *    FILE     : src/libinstrum/profiler/AllocStackProfiler.cpp
 *-----------------------------------------------------------

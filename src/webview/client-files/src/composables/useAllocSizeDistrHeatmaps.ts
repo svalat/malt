@@ -1,10 +1,11 @@
 /***********************************************************
 *    PROJECT  : MALT (MALoc Tracker)
-*    DATE     : 11/2025
+*    DATE     : 02/2026
 *    LICENSE  : CeCILL-C
 *    FILE     : src/webview/client-files/src/composables/useAllocSizeDistrHeatmaps.ts
 *-----------------------------------------------------------
 *    AUTHOR   : Emeric GUYON - 2025
+*    AUTHOR   : Sébastien Valat - 2026
 ***********************************************************/
 import { computed, type ComputedRef } from 'vue'
 import type { ScatterData } from '@/types/alloc-size-distr'

@@ -163,6 +163,7 @@
 		"src/webview/client-files/app/partials",
 		"src/webview/client-files/app/bower_components",
 		"*.png",
+		"*.webp",
 		"*.jpg",
 		"*.jpeg",
 		"*.jpeg",
