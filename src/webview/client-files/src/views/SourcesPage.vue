@@ -25,7 +25,7 @@
 
     <!-- Main Content -->
     <div v-else class="sources-layout">
-      <!-- Sidebar -->
+	  <!-- Sidebar -->
       <aside class="sources-sidebar-container">
         <SourcesSidebar
           :selector="selector"
@@ -37,6 +37,10 @@
 
       <!-- Main Content Area -->
       <main class="sources-main">
+        <!-- Warning State -->
+        <div v-if="warning" class="selection-warning" role="alert">
+          <p>{{ warning }}</p>
+        </div>
         <!-- Warning: No source available -->
         <div v-if="!editor.hasSource.value" class="no-source-warning" role="alert">
           <h3 class="warning-title">No Source Code Available</h3>
@@ -103,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSources } from '@/composables/useSources'
 import { useSourceEditor } from '@/composables/useSourceEditor'
@@ -144,6 +148,7 @@ const callStackTree = useCallStackTree()
 const sourceCodeEditorRef = ref<InstanceType<typeof SourceCodeEditor> | null>(null)
 const isMetricsModalOpen = ref(false)
 const selectedAnnotation = ref<SourceAnnotation | null>(null)
+const warning = ref<String | null>(null);
 
 /**
  * Handle function selection from sidebar
@@ -251,6 +256,13 @@ watch(
     if (editor.currentFunction.value) {
       callStackTree.updateByFunction(editor.currentFunction.value)
     }
+
+    //if metric is inclusive & name is localPeal, we print a warning
+    if (selector.inclusive.value == true && selector.metric.value == 'peakmem.local') {
+      warning.value = "Caution, 'Local peak' used in conjunction with 'inclusive' is an approximation, and not an exact computation. This beacuse the peaks does not rise up at the same time in child and parent.";
+    } else {
+      warning.value = null;
+	}
   },
 )
 
@@ -340,6 +352,19 @@ watch(
   text-align: center;
   min-height: 150px;
   max-height: 250px;
+}
+
+.selection-warning {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fffcf5;
+  border: 2px solid #ffab6b;
+  border-radius: $radius-md;
+  padding: 10px;
+  margin-bottom: $spacing-lg;
+  text-align: center;
 }
 
 .warning-title {
