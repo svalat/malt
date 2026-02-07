@@ -15,7 +15,7 @@ This one has the advantage to be **officially packaged** in distributions like D
 
 **URL**: https://github.com/KDE/heaptrack
 
-.. image:: /_static/images/tool-heaptrack.png
+.. image:: /_static/images/tool-heaptrack.webp
    :width: 95%
    :align: center
 
@@ -26,7 +26,7 @@ A memory profiler close to MALT also in some ways, for the dynamic part of the m
 
 **URL**: https://epfl-vlsc.github.io/memoro/
 
-.. image:: /_static/images/tool-memoro.png
+.. image:: /_static/images/tool-memoro.webp
    :width: 95%
    :align: center
 
@@ -37,7 +37,7 @@ A tool to report the callocations on the call tree just like the tree part of MA
 
 **URL**: https://github.com/jrfonseca/memtrail
 
-.. image:: /_static/images/tool-memtrail.png
+.. image:: /_static/images/tool-memtrail.webp
    :width: 95%
    :align: center
 
@@ -48,7 +48,7 @@ Another memory profiler, in some ways close to MALT.
 
 **URL**: https://github.com/RudjiGames/MTuner
 
-.. image:: /_static/images/tool-mtuner.png
+.. image:: /_static/images/tool-mtuner.webp
    :width: 95%
    :align: center
 
@@ -60,7 +60,7 @@ It permits to annotate the call graph with some memory metrics.
 
 **URL**: https://gperftools.github.io/gperftools/heapprofile.html
 
-.. image:: /_static/images/tool-google-heap-prof.png
+.. image:: /_static/images/tool-google-heap-prof.webp
    :width: 60%
    :align: center
 
@@ -94,7 +94,7 @@ to display the profile.
  - http://valgrind.org/
  - https://apps.kde.org/fr/massif_visualizer/
 
-.. image:: /_static/images/tool-massif-visualizer.jpeg
+.. image:: /_static/images/tool-massif-visualizer.webp
    :width: 95%
    :align: center
 
@@ -128,7 +128,7 @@ It provides lots of metrics about memory managment.
 
 **URL**: https://www.parasoft.com/product/insure/
 
-.. image:: /_static/images/tool-insure-plus-plus.png
+.. image:: /_static/images/tool-insure-plus-plus.webp
    :width: 95%
    :align: center
 
@@ -191,7 +191,7 @@ a Python code.
 
 **URL**: https://bloomberg.github.io/memray/
 
-.. image:: /_static/images/tool-memray.png
+.. image:: /_static/images/tool-memray.webp
    :width: 95%
    :align: center
 
@@ -202,6 +202,6 @@ Tool to analyse the performance an memory behavior of a code in C / Python.
 
 **URL**: https://pypi.org/project/scalene/
 
-.. image:: /_static/images/tool-scalene.png
+.. image:: /_static/images/tool-scalene.webp
    :width: 95%
    :align: center
