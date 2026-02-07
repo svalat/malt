@@ -47,7 +47,7 @@
           :data="aliveChunksChartData"
           y-axis-label="Alive chunks"
           y-axis-unit=""
-          chart-type="line"
+          chart-type="area"
           :ticks-per-second="ticksPerSecond"
         />
         <ExportControls chart-id="chunks" @export="handleExport" />
