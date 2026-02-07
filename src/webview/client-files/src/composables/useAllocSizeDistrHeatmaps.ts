@@ -17,8 +17,8 @@ import type { HeatmapCell } from '@/components/charts/HeatmapChart.vue'
  */
 export function useAllocSizeDistrHeatmaps(
   scatterData: ComputedRef<ScatterData | undefined>,
-  binsX = 50,
-  binsY = 50,
+  binsX = 64,
+  binsY = 64,
 ) {
   const sizeOverTimeHeatmap = computed(() => {
     if (!scatterData.value?.sizeOverTime?.points) return []
