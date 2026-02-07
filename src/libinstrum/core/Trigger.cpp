@@ -187,22 +187,14 @@ void Trigger::runSpyingThread(void)
 		LazyEnv env;
 		ReentranceGuard guard(env);
 		while(this->spyingThreadKeepRunning) {
-			//get sys mem
-			OSMemUsage sysMem = OS::getMemoryUsage();
-			OSProcMemUsage procMem = OS::getProcMemoryUsage();
-			if (gblState.profiler != nullptr)
-				gblState.profiler->onUpdateMem(procMem, sysMem);
-			if (this->onSysUpdate(sysMem)) {
-				//pauseAllButMe();
-				fprintf(stderr, "MALT: Watch dog triggering dump...\n");
-				maltDumpOnEvent();
-				return;
-			}
-			if (this->onProcMemUpdate(procMem)) {
-				//pauseAllButMe();
-				fprintf(stderr, "MALT: Watch dog triggering dump...\n");
-				maltDumpOnEvent();
-				return;
+			//ok
+			if (gblState.profiler != nullptr) {
+				if (gblState.profiler->onUpdateMem(getticks(), nullptr, true)) {
+					//pauseAllButMe();
+					fprintf(stderr, "MALT: Watch dog triggering dump...\n");
+					maltDumpOnEvent();
+					return;
+				}
 			}
 		}
 	});
