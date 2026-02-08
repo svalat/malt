@@ -20,7 +20,7 @@ It is done to be used on laguages : **C**, **C++**, **Fortran**, **Rust**, **Pyt
 
 It comes with a web-based graphical interface to navigate the profile :
 
-.. image:: _static/images/malt-source-annot.png
+.. image:: _static/images/malt-source-annot.webp
 
 First time here?
 ----------------
